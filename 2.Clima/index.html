@@ -1,0 +1,268 @@
+<html>
+    <head>
+        <style>
+            body {
+                margin: 0;
+                padding: 10px;
+            }
+            div{
+                position: relative;
+                width: auto;
+                padding: 5px 0;
+                max-width: max-content;
+            }
+            img{
+                width: auto;
+                max-width: 100%;
+            }
+            label {
+                min-width: 80px;
+                display: inline-block;
+            }
+            label.info-ciudad {
+                display: block;
+                padding-bottom: 10px;
+            }
+            .resultado input, .mas-info input {
+                border: 1px outset;
+                width: 100px;
+                text-align: center;
+                font-weight: 600;
+            }
+            .resultado span, .mas-info span {
+                font-size: 14px; display: inline-block; padding: 0 20px;
+            }
+            .resultado, .mas-info {
+                text-align: center;
+                margin: auto;
+            }
+            h3:hover {
+                background: #80808040;
+            }
+            h3 {
+                cursor: pointer;
+                border: 1px solid #8080803d;
+                padding: 10px;
+            }
+            .mas-info {display: none;}
+            h3:after { content: '+'; position: absolute; right: 30px; font-size: 26px; line-height: 22px; font-weight: 600; }
+            .mas-info span {
+                width: 40%;
+                display: inline-block;
+                padding: 10px 0;
+            }
+            .mas-info label { min-width: 125px; }
+            /*.ocultar-kelvin{display:none}*/
+
+
+            @media (max-width: 967px) {
+                .resultado span {
+                    width: 49%;
+                    padding: 5px 0;
+                }
+                .resultado label { min-width: 130px; }
+
+            }
+
+
+
+        </style>
+
+
+    <!-- Google Tag Manager -->
+    <script>
+    if(typeof(dataLayer)=="undefined"){
+        dataLayer = [];
+    }
+
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-52F98H8');</script>
+    <!-- End Google Tag Manager -->
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&amp;family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet">
+        <script src="https://cdn.plot.ly/plotly-2.0.0.min.js"></script>
+    </head>
+<!--
+    obtener el clima actual y el pronóstico de los próximos 5 días siguientes para su ciudad actual y las 5 ciudades más grandes cercanas a su ubicación.
+-->
+<body>
+
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-52F98H8"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+
+    <label class="info-ciudad"></label>
+    <div class="row">
+        <input type="text" id="txtCiudad" class="form-control" placeholder="ciudad">
+        <button class="btn-buscar">Buscar</button>
+    </div>
+    
+    <div class="col-md-4">
+        <label>Latitud:</label><input type="text" id="txtLat" class="form-control" placeholder="latitud" disabled="disabled">
+    </div>
+    <div class="col-md-4">
+        <label>Longitud:</label><input type="text" id="txtLng" class="form-control" placeholder="longitud" disabled="disabled">
+    </div>
+    <hr/>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBEUIJZNG7EMGkZisobVb_KDg-sNPcwgWo"></script>
+
+<script>
+
+    if (navigator.geolocation) { //check if geolocation is available
+        navigator.geolocation.getCurrentPosition(function(position){
+            $("#txtLat").val(position['coords'].latitude);
+            $("#txtLng").val(position['coords'].longitude);
+            
+            busquedaCoords(position['coords'].latitude, position['coords'].longitude)
+            clima()
+            setTimeout(function(){
+            dataLayer.push({
+                'event': 'temperatura_actual',
+                'ciudad': $('.info-ciudad').text(),
+                'temperatura': $('.temp-actual').val()});
+            },1000)
+
+            
+        });   
+    }
+
+    $(".btn-buscar").click(function () {
+        busqueda();
+    });
+
+    function busqueda() {
+        var geocoder= new google.maps.Geocoder();
+        var address = document.getElementById('txtCiudad').value;
+        geocoder.geocode({ 
+            'address': address
+        }, function(results, status) {
+            $("#txtLat").val(results[0].geometry.location.lat());
+            $("#txtLng").val(results[0].geometry.location.lng());
+            $("label.info-ciudad").text(results[0].formatted_address)
+            console.log(results)
+            clima();
+            
+            setTimeout(function(){
+            dataLayer.push({
+                'event': 'busqueda_ciudad',
+                'ciudad': $('.info-ciudad').text(),
+                'temperatura': $('.temp-actual').val()});
+            },1000)
+        });
+    }
+
+    function obtenerFecha(fecha){
+        var conteo=String(fecha).length
+        if(conteo<13){
+            conteo=13-conteo
+            for(var i=1; i<=conteo;i++){
+                fecha+='0'
+            }
+        }
+        var timestamp = parseInt(fecha)
+        var date = new Date(timestamp);
+        date.toISOString().substring(0,10)
+        return date
+    }
+
+    function clima(){
+        $('main').remove();
+        $('hr').after('<main><div class="resultado"> <span><label>Temperatura: </label><input type="text" class="temp-actual" value="" disabled></span> <span><label>Temperatur más alta: </label><input type="text" value="" disabled class="temp-max"></span><span><label>Temperatura más baja: </label><input type="text" value="" class="temp-min" disabled></span><span><label>Descripción: </label><input class="temp-descrip" type="text" value="" disabled></span></div><hr><h3>Mas Información</h3><div class="mas-info"> <span><label>Velocidad del viento: </label><input type="text" class="wind_speed" value="" disabled=""></span> <span><label>Humedad: </label><input type="text" value="" disabled="" class="humidity"></span><span><label>Presión: </label><input type="text" value="" class="pressure" disabled=""></span><span><label>Hora del amanecer: </label><input class="sunrise" type="text" value="" disabled=""></span></div></main>')
+
+        $('h3').click(function(){
+            $('.mas-info').slideToggle()
+        })
+
+        $.ajax({
+            url: 'https://api.openweathermap.org/data/2.5/onecall?lat='+$("#txtLat").val()+'&lon='+$("#txtLng").val()+'&exclude=minutely,hourly&appid=991343e226e412010c82b9a5140af3cf',
+            success: function(respuesta) {
+                console.log(respuesta);
+                $('.temp-actual').val((parseFloat(respuesta.current.temp) - 273.15).toFixed(2)+'°C');
+                $('.temp-max').val((parseFloat(respuesta.daily[0].temp.max) - 273.15).toFixed(2)+'°C');
+                $('.temp-min').val((parseFloat(respuesta.daily[0].temp.min) - 273.15).toFixed(2)+'°C');
+                $('.temp-descrip').val(respuesta.daily[0].weather[0].description)
+           
+                $('.wind_speed').val(respuesta.daily[0].wind_speed+' metro/seg')
+                $('.humidity').val(respuesta.daily[0].humidity+'%')
+                $('.pressure').val(respuesta.daily[0].pressure+' hPa')
+                hora=obtenerFecha(respuesta.daily[0].sunrise)
+                $('.sunrise').val(String(hora.getHours())+':'+String(hora.getMinutes()))
+
+                x=[obtenerFecha(respuesta.daily[0].dt).toISOString().substring(0,10),
+                    obtenerFecha(respuesta.daily[1].dt).toISOString().substring(0,10),
+                    obtenerFecha(respuesta.daily[2].dt).toISOString().substring(0,10),
+                    obtenerFecha(respuesta.daily[3].dt).toISOString().substring(0,10),
+                    obtenerFecha(respuesta.daily[4].dt).toISOString().substring(0,10),
+                    obtenerFecha(respuesta.daily[5].dt).toISOString().substring(0,10)
+                ]
+                ymax=[respuesta.daily[0].temp.max - 273.15,
+                    respuesta.daily[1].temp.max - 273.15,
+                    respuesta.daily[2].temp.max - 273.15,
+                    respuesta.daily[3].temp.max - 273.15,
+                    respuesta.daily[4].temp.max - 273.15,
+                    respuesta.daily[5].temp.max - 273.15
+                ];
+                ymin=[respuesta.daily[0].temp.min - 273.15,
+                    respuesta.daily[1].temp.min - 273.15,
+                    respuesta.daily[2].temp.min - 273.15,
+                    respuesta.daily[3].temp.min - 273.15,
+                    respuesta.daily[4].temp.min - 273.15,
+                    respuesta.daily[5].temp.min - 273.15
+                ];
+
+                graficar(x,ymax,ymin)
+            },
+            error: function() {
+                console.log("No se ha podido obtener la información");
+            }
+        });
+    }
+
+function graficar(fechas,maxi,mini){
+    var max = {
+        x: fechas,
+        y: maxi,
+        name: 'Temperatura Max.',
+        type: 'bar'
+    };
+    var min = {
+        x: fechas,
+        y: mini,
+        name: 'Temperatura Min.',
+        type: 'bar'
+    };
+    var data = [max, min];
+    var layout = {barmode: 'group'};
+    Plotly.newPlot('myDiv', data, layout);
+}
+
+</script>
+<div id="myDiv" style="width:100%;height:400px;margin: auto;max-width: 600px;"></div>
+
+</body>
+</html>
+
+<script>
+function busquedaCoords(lt, long){
+    const latlng = {
+        lat: parseFloat(lt),
+        lng: parseFloat(long),
+    };           
+    var geocoder= new google.maps.Geocoder();
+    var address = document.getElementById('txtCiudad').value;
+    geocoder.geocode({ 
+        location: latlng 
+    }, function(results, status) {
+        $("label.info-ciudad").text(results[0].formatted_address)
+        console.log(results)
+    });
+}
+
+</script>

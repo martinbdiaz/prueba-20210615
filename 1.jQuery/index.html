@@ -1,0 +1,173 @@
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" crossorigin="anonymous"></script>
+
+<div id="userRegister" class="ctn-form">
+    <h2>Regístrate aquí y entérate de todas las ofertas</h2>
+    <form>
+        <div class="boxInputForm clearfix">
+            <div class="clearfix">
+                <div class="col-sm-6 clearfix">
+                    <div class="form-group">
+                        <!--img  src="" alt="Hotsale 2019"-->
+                        <input type="text" class="form-control" placeholder="Nombre" data-bind="value: Name">
+                    </div>
+                </div>
+                <div class="col-sm-6 left-bar clearfix">
+                    <div class="form-group">
+                        <!--img  src="" alt="Hotsale 2019"-->
+                        <input type="text" class="form-control" placeholder="Apellido" data-bind="value: LastName">
+                    </div>
+                </div>
+            </div>
+            <div class="hrStyle clearfix"></div>
+            <div class="clearfix">
+                <div class="col-sm-6 clearfix">
+                    <div class="form-group">
+                        <!--img  src="" alt="Hotsale 2019"-->
+                        <input type="text" class="form-control" placeholder="E-mail: ejemplo@com.co" data-bind="value: Email">
+                    </div>
+                </div>
+                <div class="col-sm-6 left-bar clearfix">
+                    <div class="form-group">
+                        <!--img  src="" alt="Hotsale 2019"-->
+                        <input type="text" class="form-control" placeholder="Teléfono" data-bind="value: Phone" onkeyup="validar_phone(this)">
+                    </div>
+                </div>
+            </div>
+            <div class="hrStyle clearfix"></div>
+        </div>
+        <div class="checkbox">
+            <input type="checkbox" data-bind="checked: Terms" />
+            <label>
+                Soy mayor de edad y acepto las <a href="" target="_blank">políticas de privacidad</a>, los <a href="" target="_blank">términos y condiciones</a> del portal.
+            </label>
+        </div>
+        <div class="col-sm-6 col-md-5 group-btn">
+            <button type="submit" class="btn-default btnEnviar" data-bind="click: SendRegister">Registrar</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function validar(){
+
+        if($('input[data-bind="value: Name"]').val().trim().length==0){
+            if( $('input[data-bind="value: Name"] + .color-red').length==0){
+                $('input[data-bind="value: Name"]').css('border-color','#bd0202').after('<div class="color-red">Campo Nombre es requerido</div>')
+            }
+        }else{
+            $('input[data-bind="value: Name"]').css('border-color','gray')
+            $('input[data-bind="value: Name"] + .color-red').remove()
+        }
+
+        if($('input[data-bind="value: LastName"]').val().trim().length==0){
+            if($('input[data-bind="value: LastName"] + .color-red').length==0){
+                $('input[data-bind="value: LastName"]').css('border-color','#bd0202').after('<div class="color-red">Campo Apellido es requerido</div>')
+            }
+        }else{
+            $('input[data-bind="value: LastName"]').css('border-color','gray')
+            $('input[data-bind="value: LastName"] + .color-red').remove()
+        }
+
+        if($('input[data-bind="value: Email"]').val().trim().length==0){
+            if($('input[data-bind="value: Email"] + .color-red').length==0){
+                $('input[data-bind="value: Email"]').css('border-color','#bd0202').after('<div class="color-red">Campo E-mail es requerido</div>')
+            }
+        }else{
+                /*/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3,4})+$/*/
+                emailRegex = /^[-\w.%+]{1,64}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/i;
+                //Se muestra un texto a modo de ejemplo, luego va a ser un icono
+                if (emailRegex.test($('input[data-bind="value: Email"]').val())) {
+                    $('input[data-bind="value: Email"]').css('border-color','gray')
+                    $('input[data-bind="value: Email"] + .color-red').remove()   
+                } else { 
+                    $('input[data-bind="value: Email"]').css('border-color','gray')
+                    $('input[data-bind="value: Email"] + .color-red').remove()   
+                    $('input[data-bind="value: Email"]').css('border-color','#bd0202').after('<div class="color-red">La dirección de email es incorrecta</div>')
+                }
+        }
+
+        if($('input[data-bind="value: Phone"]').val().trim().length==0){
+            if($('input[data-bind="value: Phone"] + .color-red').length==0){
+                $('input[data-bind="value: Phone"]').css('border-color','#bd0202').after('<div class="color-red">Campo Teléfono es requerido</div>')
+            }
+        }else{
+            $('input[data-bind="value: Phone"]').css('border-color','gray')
+            $('input[data-bind="value: Phone"] + .color-red').remove()
+        }
+
+        if(!$('input[type="checkbox"]').prop('checked')){
+            if($('input[type="checkbox"]').parent().find('.color-red').length==0){
+                $('input[type="checkbox"]').css('border-color','#bd0202').parent().append('<div class="color-red">Campo requerido</div>')
+            }
+        }else{
+            $('input[type="checkbox"]').css('border-color','gray')
+            $('input[type="checkbox"]').parent().find('.color-red').remove()
+        }
+    }
+    $('button[type="submit"]').click(function(e){
+        e.preventDefault();
+        validar();
+        
+        emailRegex = /^[-\w.%+]{1,64}@(?:[A-Z0-9-]{1,63}\.){1,125}[A-Z]{2,63}$/i;
+        if(
+            $('input[data-bind="value: Name"]').val().trim().length &&
+            $('input[data-bind="value: LastName"]').val().trim().length &&
+            $('input[data-bind="value: Email"]').val().trim().length &&
+            $('input[data-bind="value: Phone"]').val().trim().length &&
+            $('input[type="checkbox"]').prop('checked') &&
+            emailRegex.test($('input[data-bind="value: Email"]').val())){
+                $('input[data-bind="value: Name"]').val('')
+                $('input[data-bind="value: LastName"]').val('')
+                $('input[data-bind="value: Email"]').val('')
+                $('input[data-bind="value: Phone"]').val('')
+                $('input[type="checkbox"]').prop('checked',false)
+                $('body').append('<div class="registro-exitoso">¡Registro Exitoso!<button class="ok" style="font-size: 23px; margin-left: 5px">X</button></div>')
+                $('.ok').click(function(){
+                    $(this).parent().remove()
+                })
+            }
+    })
+
+    $('input[type="checkbox"]').change(function(){
+        validar()
+    })
+
+
+    function validar_phone(evento){
+        evento.value = evento.value.replace(/[^0-9]/g,"");
+    }
+
+</script>
+
+<style>
+    div#userRegister {
+        margin: auto;
+        max-width: 600px;
+        text-align: center;
+    }
+    .form-group, .checkbox {
+        min-height: 50px;
+    }
+    .color-red {
+        color: #bd0000;
+        padding-top: 2px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    input.form-control {
+        border: 1px solid gray;
+    }
+    .registro-exitoso {
+        position: fixed;
+        width: 300px;
+        height: 150px;
+        left: calc(50% - 150px);
+        top: calc(30% - 75px);
+        background: white;
+        text-align: center;
+        line-height: 150px;
+        font-size: 23px;
+        border: 1px solid #10ce10;
+    }
+    /*button[type="submit"]{opacity: 0.3; pointer-events: none;}*/
+</style>
